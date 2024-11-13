@@ -1,21 +1,15 @@
 package org.playground;
 import org.catcher.HawkCatcher;
 
+import java.util.logging.Handler;
+
 public class PlaygroundApp {
 
     public static void main(String[] args) {
-        // Log a warning manually
-        HawkCatcher.logWarning("This is a test warning.");
+        HawkCatcher hawkCatcher = new HawkCatcher();
+        hawkCatcher.init();
 
-        // Run a critical operation
-        try {
-            performCriticalOperation();
-        } catch (Exception e) {
-            HawkCatcher.logError("Caught an exception in critical operation: " + e.getMessage());
-        }
-
-        // Report current error status to check if there were issues
-        HawkCatcher.reportStatus();
+        throw new RuntimeException("Test Exception");
     }
 
     private static void performCriticalOperation() throws Exception {
