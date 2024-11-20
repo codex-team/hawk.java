@@ -17,6 +17,6 @@ public class HawkCatcher{
      *  Sets the custom handler as the default uncaught exception handler.
      */
     public void init(){
-        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+        exceptionHandler.enable();
     }
 }

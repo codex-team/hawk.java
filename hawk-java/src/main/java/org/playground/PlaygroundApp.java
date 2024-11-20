@@ -10,7 +10,7 @@ public class PlaygroundApp {
     /**
      * The main method initializes the HawkCatcher and runs test scenarios.
      *
-     * @param args command line arguments 
+     * @param args command line arguments
      */
     public static void main(String[] args) {
         HawkCatcher hawkCatcher = new HawkCatcher();

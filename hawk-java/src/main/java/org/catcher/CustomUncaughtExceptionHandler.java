@@ -4,7 +4,7 @@ package org.catcher;
  * Custom handler for uncaught exceptions in threads.
  */
 public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-    private Thread.UncaughtExceptionHandler defaultHandler;
+    private final Thread.UncaughtExceptionHandler defaultHandler;
 
   /**
    * Initializes the custom handler and stores the default handler.
@@ -27,5 +27,11 @@ public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionH
         if (defaultHandler != null) {
             defaultHandler.uncaughtException(t, e);
         }
+    }
+    /**
+     * Enables this handler as the default uncaught exception handler.
+     */
+    public void enable() {
+        Thread.setDefaultUncaughtExceptionHandler(this);
     }
 }
