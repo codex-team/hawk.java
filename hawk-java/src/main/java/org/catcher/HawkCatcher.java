@@ -1,21 +1,22 @@
 package org.catcher;
 
-public class HawkCatcher implements Thread.UncaughtExceptionHandler{
+/**
+ * Manages uncaught exception handling in the application.
+ */
+public class HawkCatcher{
+    private final CustomUncaughtExceptionHandler exceptionHandler;
 
-    private Thread.UncaughtExceptionHandler basicHandler;
-
+    /**
+     * Initializes a new HawkCatcher instance.
+     */
     public HawkCatcher(){
-
+        this.exceptionHandler = new CustomUncaughtExceptionHandler();
     }
 
+    /**
+     *  Sets the custom handler as the default uncaught exception handler.
+     */
     public void init(){
-        basicHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(this);
-    }
-
-    @Override
-    public void uncaughtException(Thread t, Throwable e){
-        System.out.printf("Exception in thread %s: %s\n", t.getName(), e.getMessage());
-        e.printStackTrace();
+        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
     }
 }
