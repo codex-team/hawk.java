@@ -3,8 +3,8 @@ package org.catcher;
 /**
  * Manages uncaught exception handling in the application.
  */
-public class HawkCatcher{
-    private static volatile HawkCatcher instance;
+public class Hawk {
+    private static volatile Hawk instance;
     private final CustomUncaughtExceptionHandler exceptionHandler;
 
     /**
@@ -12,11 +12,11 @@ public class HawkCatcher{
      *
      * @return the singleton instance
      */
-    private static HawkCatcher getInstance() {
+    private static Hawk getInstance() {
         if (instance == null) {
-            synchronized (HawkCatcher.class) {
+            synchronized (Hawk.class) {
                 if (instance == null) {
-                    instance = new HawkCatcher();
+                    instance = new Hawk();
                 }
             }
         }
@@ -26,7 +26,7 @@ public class HawkCatcher{
     /**
      * Initializes a new HawkCatcher instance.
      */
-    private HawkCatcher(){
+    private Hawk(){
         this.exceptionHandler = new CustomUncaughtExceptionHandler();
     }
 

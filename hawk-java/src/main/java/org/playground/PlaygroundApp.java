@@ -1,6 +1,6 @@
 package org.playground;
 
-import org.catcher.HawkCatcher;
+import org.catcher.Hawk;
 
 /**
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
@@ -13,7 +13,7 @@ public class PlaygroundApp {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        HawkCatcher.init();
+        Hawk.init();
 
         runTestScenarios();
     }
