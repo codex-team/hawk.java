@@ -1,40 +1,51 @@
 package so.hawk.java.catcher;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Base64;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import org.json.*;
 /**
  * Manages uncaught exception handling in the application.
  */
 public class Hawk {
+    /**
+     * Singleton instance of Hawk.
+     */
     private static volatile Hawk instance;
+
+    /**
+     * Custom uncaught exception handler.
+     */
     private final CustomUncaughtExceptionHandler exceptionHandler;
-    private String token;
-    private String secret;
-    private String integrationId;
-    private static String endpointBase;
 
     /**
-     * Returns the singleton instance of HawkCatcher.
+     * Authentication token used for error reporting.
+     */
+    private final String token;
+
+    /**
+     * Integration ID extracted from the token.
+     */
+    private final String integrationId;
+
+    /**
+     * Base endpoint for sending error reports.
+     */
+    private final String endpointBase;
+
+    /**
+     * Private constructor to initialize the Hawk instance.
      *
-     * @return the singleton instance
+     * @param token the authentication token
      */
-
-    /**
-     * Initializes a new HawkCatcher instance.
-     */
-    private Hawk(String token){
+    private Hawk(String token) {
         this.token = token;
-        decodeToken(token);
-        endpointBase = String.format("https://%s.k1.hawk.so", integrationId);
+        this.integrationId = HawkHttpUtils.decodeToken(token);
+        this.endpointBase = String.format("https://%s.k1.hawk.so", integrationId);
         this.exceptionHandler = new CustomUncaughtExceptionHandler();
     }
 
-    // Initialize Hawk with a token (must be called first)
+    /**
+     * Initializes the Hawk instance with the given token.
+     *
+     * @param token the authentication token
+     */
     public static synchronized void init(String token) {
         if (instance == null) {
             instance = new Hawk(token);
@@ -42,110 +53,52 @@ public class Hawk {
         getInstance().exceptionHandler.enable();
     }
 
-    // Get the Singleton instance
+    /**
+     * Retrieves the singleton Hawk instance.
+     *
+     * @return the Hawk instance
+     * @throws IllegalStateException if Hawk is not initialized
+     */
     private static Hawk getInstance() {
         if (instance == null) {
             throw new IllegalStateException("Hawk is not initialized. Please call Hawk.init(token) before using.");
         }
         return instance;
     }
+
     /**
-     *  Sets the custom handler as the default uncaught exception handler.
+     * Sends an error report for the given exception.
+     *
+     * @param e the exception to report
      */
-
-    private void decodeToken(String token){
-        try {
-            String decodedJson = new String(Base64.getDecoder().decode(token));
-            JSONObject json = new JSONObject(decodedJson);
-            this.integrationId = json.getString("integrationId");
-            this.secret = json.getString("secret");
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token: Unable to decode Base64 JSON.");
-        }
+    public static void sendError(Exception e) {
+        HawkHttpUtils.sendError(getInstance(), e);
     }
 
-    public static void logError(Exception e) {
-        Hawk hawk = getInstance();
-        String payload = new JSONObject()
-            .put("token", hawk.token)
-            .put("catcherType", "errors/java")
-            .put("payload", new JSONObject()
-                .put("title", e.toString())
-                .put("backtrace", hawk.getStackTrace(e))
-            )
-            .toString();
-
-        System.out.println(e.toString());
-
-
-        hawk.sendPostRequest(payload);
-        System.out.println("Send log");
-    }
-
+    /**
+     * Sends a custom message to the server.
+     *
+     * @param message the message to send
+     */
     public static void send(String message) {
-        Hawk hawk = getInstance();
-        String payload = new JSONObject()
-            .put("token", hawk.token)
-            .put("catcherType", "errors/java")
-            .put("payload", new JSONObject()
-                .put("title", message)
-//                .put("backtrace", new JSONArray())) // Empty backtrace for custom messages
-            )
-            .toString();
-        hawk.sendPostRequest(payload);
-        System.out.println("Send succsess");
+        HawkHttpUtils.send(getInstance(), message);
     }
 
-    // Helper method to convert stack trace to a JSON array
-    private JSONArray getStackTrace(Exception e) {
-        JSONArray stackTraceArray = new JSONArray();
-        for (StackTraceElement element : e.getStackTrace()) {
-            stackTraceArray.put(element.toString());
-        }
-        return stackTraceArray;
+    /**
+     * Retrieves the token used by this Hawk instance.
+     *
+     * @return the authentication token
+     */
+    public String getToken() {
+        return token;
     }
 
-    // Read the server response
-    private String readResponse(HttpURLConnection connection) {
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-        } catch (Exception e) {
-            return "Unable to read response.";
-        }
-        return response.toString();
-    }
-
-
-    // Send a POST request
-    private void sendPostRequest(String payload) {
-        try {
-            URL url = new URL(endpointBase);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-            System.out.println(">>>> " + payload);
-
-            System.out.println("first try");
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(payload.getBytes());
-                os.flush();
-            }
-            System.out.println("second try");
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                System.err.println("Failed to log error. HTTP response code: " + responseCode);
-            }
-            String responseMessage = readResponse(connection);
-            System.err.println("Server response: " + responseMessage);
-
-        } catch (Exception ex) {
-            System.err.println("Failed to send error: " + ex.getMessage());
-        }
+    /**
+     * Retrieves the base endpoint URL for this Hawk instance.
+     *
+     * @return the endpoint base URL
+     */
+    public String getEndpointBase() {
+        return endpointBase;
     }
 }

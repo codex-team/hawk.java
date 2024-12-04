@@ -7,14 +7,17 @@ import so.hawk.java.catcher.Hawk;
  */
 public class PlaygroundApp {
     public static String integrationtoken = "eyJpbnRlZ3JhdGlvbklkIjoiYjNiNjdkYTYtYTExYy00YzdhLTgwODItOGQ0MmVjYTk3NjIxIiwic2VjcmV0IjoiYWE3NTU0NzAtMWE3NS00MTQ1LTgyMDQtYjk0MmY4NGFkMmExIn0=";
+
     /**
-     * The main method initializes the HawkCatcher and runs test scenarios.
+     * The main method initializes the HawkCatcher, runs test scenarios and sends custom error.
      *
      * @param args command line arguments
      */
     public static void main(String[] args) {
 
         Hawk.init(PlaygroundApp.integrationtoken);
+
+        Hawk.send("Hi, Hawk");
 
         runTestScenarios();
     }

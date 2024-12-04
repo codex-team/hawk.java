@@ -21,10 +21,7 @@ public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionH
      */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-//        System.out.printf("Exception in thread %s: %s\n", t.getName(), e.getMessage());
-//        e.printStackTrace();
-
-        Hawk.logError((Exception) e);
+        Hawk.sendError((Exception) e);
 
         if (defaultHandler != null) {
             defaultHandler.uncaughtException(t, e);
