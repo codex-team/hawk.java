@@ -1,4 +1,4 @@
-package hawk.catcher;
+package so.hawk.java.catcher;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -71,7 +71,7 @@ public class Hawk {
             .put("catcherType", "errors/java")
             .put("payload", new JSONObject()
                 .put("title", e.toString())
-//                .put("backtrace", hawk.getStackTrace(e))
+                .put("backtrace", hawk.getStackTrace(e))
             )
             .toString();
 

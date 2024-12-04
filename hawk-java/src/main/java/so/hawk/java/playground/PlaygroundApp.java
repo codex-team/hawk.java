@@ -1,6 +1,6 @@
-package hawk.playground;
+package so.hawk.java.playground;
 
-import hawk.catcher.Hawk;
+import so.hawk.java.catcher.Hawk;
 
 /**
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
