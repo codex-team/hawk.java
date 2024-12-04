@@ -1,19 +1,20 @@
-package org.playground;
+package hawk.playground;
 
-import org.catcher.Hawk;
+import hawk.catcher.Hawk;
 
 /**
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
  */
 public class PlaygroundApp {
-
+    public static String integrationtoken = "eyJpbnRlZ3JhdGlvbklkIjoiYjNiNjdkYTYtYTExYy00YzdhLTgwODItOGQ0MmVjYTk3NjIxIiwic2VjcmV0IjoiYWE3NTU0NzAtMWE3NS00MTQ1LTgyMDQtYjk0MmY4NGFkMmExIn0=";
     /**
      * The main method initializes the HawkCatcher and runs test scenarios.
      *
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        Hawk.init();
+
+        Hawk.init(PlaygroundApp.integrationtoken);
 
         runTestScenarios();
     }

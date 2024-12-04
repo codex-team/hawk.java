@@ -7,5 +7,5 @@ ____
 To hook up the Catcher you will need JDK on your computer.
 Now you can download(or clone repo) catcher and playground packeges to test it.
 
-In PlaygroundApp.Java you will see "import org.catcher.HawkCatcher" that connect catcher.
+In PlaygroundApp.Java you will see "import org.catcher.Hawk" that connect catcher.
 

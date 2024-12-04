@@ -1,5 +1,6 @@
-package org.catcher;
+package hawk.catcher;
 
+import hawk.catcher.Hawk;
 /**
  * Custom handler for uncaught exceptions in threads.
  */
@@ -21,8 +22,10 @@ public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionH
      */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        System.out.printf("Exception in thread %s: %s\n", t.getName(), e.getMessage());
-        e.printStackTrace();
+//        System.out.printf("Exception in thread %s: %s\n", t.getName(), e.getMessage());
+//        e.printStackTrace();
+
+        Hawk.logError((Exception) e);
 
         if (defaultHandler != null) {
             defaultHandler.uncaughtException(t, e);
