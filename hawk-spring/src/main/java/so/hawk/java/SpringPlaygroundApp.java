@@ -1,6 +1,6 @@
 package so.hawk.java;
 
-import so.hawk.java.catcher.SpringHawk;
+import so.hawk.java.catcher.Hawk;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class SpringPlaygroundApp {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        SpringHawk.init();
+        Hawk.init();
         SpringApplication.run(SpringPlaygroundApp.class, args);
     }
 }
