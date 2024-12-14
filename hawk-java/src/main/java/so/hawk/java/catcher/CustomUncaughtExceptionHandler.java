@@ -21,7 +21,7 @@ public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionH
      */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        Hawk.sendError((Exception) e);
+        Hawk.send((Exception) e);
 
         if (defaultHandler != null) {
             defaultHandler.uncaughtException(t, e);

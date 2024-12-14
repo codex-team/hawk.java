@@ -6,7 +6,7 @@ import so.hawk.java.catcher.Hawk;
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
  */
 public class PlaygroundApp {
-    public static String integrationtoken = "eyJpbnRlZ3JhdGlvbklkIjoiYjNiNjdkYTYtYTExYy00YzdhLTgwODItOGQ0MmVjYTk3NjIxIiwic2VjcmV0IjoiYWE3NTU0NzAtMWE3NS00MTQ1LTgyMDQtYjk0MmY4NGFkMmExIn0=";
+    public static String integrationtoken = "PASTE_YOUR_TOKEN";
 
     /**
      * The main method initializes the HawkCatcher, runs test scenarios and sends custom error.
