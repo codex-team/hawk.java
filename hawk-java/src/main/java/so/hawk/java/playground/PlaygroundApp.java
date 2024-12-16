@@ -17,7 +17,7 @@ public class PlaygroundApp {
 
         Hawk.init(PlaygroundApp.integrationtoken);
 
-        Hawk.send("I love so much");
+        Hawk.send("I love Hawk so much");
 
         runTestScenarios();
     }
@@ -31,12 +31,18 @@ public class PlaygroundApp {
         });
         scenario1.start();
 
+        /**
+         * This will throw ArrayOutOfBoundsException
+         */
         Thread scenario2 = new Thread(() -> {
             int[] arr = new int[5];
             System.out.println(arr[10]);
         });
         scenario2.start();
 
+        /**
+         * This will throw NullPointerException
+         */
         Thread scenario3 = new Thread(() -> {
             String str = null;
             System.out.println(str.length());
