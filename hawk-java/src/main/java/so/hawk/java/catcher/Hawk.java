@@ -33,13 +33,31 @@ public class Hawk {
     private final String endpointBase;
 
     /**
+     * String with catcher type.
+     */
+    private static final String catcherType = "errors/java";
+
+    /**
+     * Sends an error or a custom message to the server based on the type of input.
+     *
+     * @param messageOrException Either a custom message or an exception to send.
+     */
+    public static void send(Object messageOrException) {
+        Hawk hawkInstance = getInstance();
+
+        String payload = composeEvent(hawkInstance, messageOrException);
+
+        HawkHttpUtils.sendPostRequest(hawkInstance.getEndpointBase(), payload);
+    }
+
+    /**
      * Private constructor to initialize the Hawk instance.
      *
      * @param token the authentication token
      */
     private Hawk(String token) {
         this.token = token;
-        this.integrationId = decodeToken(token);
+        this.integrationId = extractIntegrationIdFromToken(token);
         this.endpointBase = String.format("https://%s.k1.hawk.so", integrationId);
         this.exceptionHandler = new CustomUncaughtExceptionHandler();
     }
@@ -76,7 +94,7 @@ public class Hawk {
      * @param token the encoded token
      * @return the integration ID
      */
-    public static String decodeToken(String token) {
+    private static String extractIntegrationIdFromToken(String token) {
         try {
             String decodedJson = new String(Base64.getDecoder().decode(token));
             JSONObject json = new JSONObject(decodedJson);
@@ -87,29 +105,16 @@ public class Hawk {
     }
 
     /**
-     * Sends an error or a custom message to the server based on the type of input.
-     *
-     * @param messageOrException Either a custom message or an exception to send.
-     */
-    public static void send(Object messageOrException) {
-        Hawk hawkInstance = getInstance();
-
-        String payload = buildPayload(hawkInstance, messageOrException);
-
-        HawkHttpUtils.sendPostRequest(hawkInstance.getEndpointBase(), payload);
-    }
-
-    /**
      * Builds the payload for the server request based on the input type.
      *
      * @param hawkInstance the current Hawk instance
      * @param messageOrException the custom message or exception
      * @return the JSON payload as a string
      */
-    private static String buildPayload(Hawk hawkInstance, Object messageOrException) {
-        JSONObject payloadObj = new JSONObject();
-        payloadObj.put("token", hawkInstance.getToken());
-        payloadObj.put("catcherType", "errors/java");
+    private static String composeEvent(Hawk hawkInstance, Object messageOrException) {
+        JSONObject event = new JSONObject();
+        event.put("token", hawkInstance.getToken());
+        event.put("catcherType", catcherType);
 
         JSONObject payloadDetails = new JSONObject();
 
@@ -123,8 +128,8 @@ public class Hawk {
             throw new IllegalArgumentException("Invalid argument type. Expected String or Exception.");
         }
 
-        payloadObj.put("payload", payloadDetails);
-        return payloadObj.toString();
+        event.put("payload", payloadDetails);
+        return event.toString();
     }
 
 

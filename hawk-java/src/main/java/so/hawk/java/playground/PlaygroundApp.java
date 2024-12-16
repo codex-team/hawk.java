@@ -6,7 +6,7 @@ import so.hawk.java.catcher.Hawk;
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
  */
 public class PlaygroundApp {
-    public static String integrationtoken = "PASTE_YOUR_TOKEN";
+    public static String integrationtoken = "PASTE_YOUR_WRITE";
 
     /**
      * The main method initializes the HawkCatcher, runs test scenarios and sends custom error.
@@ -17,7 +17,7 @@ public class PlaygroundApp {
 
         Hawk.init(PlaygroundApp.integrationtoken);
 
-        Hawk.send("Hi, Hawk");
+        Hawk.send("I love so much");
 
         runTestScenarios();
     }
@@ -33,13 +33,13 @@ public class PlaygroundApp {
 
         Thread scenario2 = new Thread(() -> {
             int[] arr = new int[5];
-            System.out.println(arr[10]); // This will throw ArrayIndexOutOfBoundsException
+            System.out.println(arr[10]);
         });
         scenario2.start();
 
         Thread scenario3 = new Thread(() -> {
             String str = null;
-            System.out.println(str.length()); // This will throw NullPointerException
+            System.out.println(str.length());
         });
         scenario3.start();
 

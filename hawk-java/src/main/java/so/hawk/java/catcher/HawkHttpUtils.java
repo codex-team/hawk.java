@@ -41,8 +41,6 @@ public class HawkHttpUtils {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
 
-        System.out.println(">>>> " + payload);
-
         try (OutputStream os = connection.getOutputStream()) {
           os.write(payload.getBytes());
           os.flush();
@@ -52,8 +50,6 @@ public class HawkHttpUtils {
         if (responseCode != HttpURLConnection.HTTP_OK) {
           System.err.println("Failed to log error. HTTP response code: " + responseCode);
         }
-        String responseMessage = readResponse(connection);
-        System.err.println("Server response: " + responseMessage);
 
       } catch (Exception ex) {
         System.err.println("Failed to send error: " + ex.getMessage());
