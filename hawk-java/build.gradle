@@ -20,10 +20,10 @@ dependencies {
     implementation 'org.json:json:20240303'
 }
 
-group = 'org'
+group = 'so'
 version = '1.0-SNAPSHOT'
 description = 'HawkCatcher'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 publishing {
     publications {

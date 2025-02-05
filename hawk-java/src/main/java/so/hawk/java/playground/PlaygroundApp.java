@@ -17,7 +17,10 @@ public class PlaygroundApp {
 
         Hawk.init(PlaygroundApp.integrationtoken);
 
-        Hawk.send("I love Hawk so much");
+        Hawk.setContext("haha","hehe");
+
+        Hawk.send("I love Hawk so much 99999ikjkderfk k kk kfkkfkfkfkf");
+        Hawk.send("One more test");
 
         runTestScenarios();
     }
