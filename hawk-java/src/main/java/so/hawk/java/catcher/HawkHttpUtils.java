@@ -37,6 +37,7 @@ public class HawkHttpUtils {
       try {
         URL url = new URL(endpointBase);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(2000);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
