@@ -187,6 +187,14 @@ public class Hawk {
         return event.toString();
     }
 
+    /**
+     * Creates a JSON array representing the stack trace (backtrace) based on the provided throwable.
+     * Each element in the array represents a single frame of the stack trace and includes information
+     * about the file, line number, method name, and a snippet of the source code.
+     *
+     * @param throwable The exception or error for which the backtrace is being generated.
+     * @return A JSONArray containing the backtrace details for each stack frame.
+     */
     private static JSONArray getStackTraceWithSource(Throwable throwable) {
         JSONArray backtrace = new JSONArray();
 
@@ -227,6 +235,13 @@ public class Hawk {
         return backtrace;
     }
 
+    /**
+     * Attempts to retrieve a snippet of the source code for the given stack trace element.
+     * Searches for the file in predefined directories and reads the lines around the specified line number.
+     *
+     * @param element The stack trace element for which the source code is being retrieved.
+     * @return A string representation of the source code snippet or "Source code unavailable" if the file cannot be found.
+     */
     private static String getSourceCode(StackTraceElement element) {
         try {
             String fileName = element.getFileName();
@@ -258,12 +273,26 @@ public class Hawk {
         }
     }
 
+    /**
+     * Constructs the full path to the source file based on the base directory, class name, and file name.
+     *
+     * @param basePath   The base directory where the source file is expected to be located.
+     * @param className  The fully qualified name of the class associated with the stack trace element.
+     * @param fileName   The name of the source file.
+     * @return The full path to the source file.
+     */
     private static String constructFullPath(String basePath, String className, String fileName) {
 
         String packagePath = className.replace('.', '/');
         return basePath + "/" + packagePath + "." + getExtension(fileName);
     }
 
+    /**
+     * Extracts the file extension from the given file name.
+     *
+     * @param fileName The name of the file.
+     * @return The file extension (e.g., "java") or an empty string if no extension is present.
+     */
     private static String getExtension(String fileName) {
         if (fileName != null && fileName.contains(".")) {
             return fileName.substring(fileName.lastIndexOf('.') + 1);
@@ -271,6 +300,14 @@ public class Hawk {
         return "";
     }
 
+    /**
+     * Reads the content of the source file and extracts a snippet around the specified line number.
+     *
+     * @param path       The full path to the source file.
+     * @param lineNumber The line number around which the snippet is extracted.
+     * @return A formatted string containing the source code snippet with line numbers.
+     * @throws Exception If an error occurs while reading the file.
+     */
     private static String readFileContent(java.nio.file.Path path, int lineNumber) throws Exception {
         List<String> lines = java.nio.file.Files.readAllLines(path);
 
