@@ -1,5 +1,6 @@
 package so.hawk.catcher;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -99,13 +100,10 @@ public class Hawk {
      */
     public static synchronized void init(HawkConfigurator configLambda) {
         if (instance == null) {
-            // Создаем новый объект настроек
             HawkSettings settings = new HawkSettings("default_token");
 
-            // Применяем конфигурацию через лямбду
             configLambda.configure(settings);
 
-            // Инициализируем Hawk с готовыми настройками
             instance = new Hawk(settings);
             getInstance().exceptionHandler.enable();
         }
@@ -166,6 +164,9 @@ public class Hawk {
             Exception e = (Exception) messageOrException;
             payloadDetails.put("title", e.toString());
 
+            payloadDetails.putOpt("type", e.getClass().getSimpleName());
+            payloadDetails.putOpt("description", e.getMessage());
+
             payloadDetails.put("backtrace", getStackTraceWithSource(e));
         } else if (messageOrException instanceof String) {
             String message = (String) messageOrException;
@@ -176,6 +177,9 @@ public class Hawk {
 
         payloadDetails.put("context", hawkInstance.context);
         payloadDetails.put("user", hawkInstance.user);
+        payloadDetails.putOpt("release", hawkInstance.context.optString("version"));
+        payloadDetails.putOpt("addons", new JSONObject());
+
         event.put("payload", payloadDetails);
 
         System.out.println("Composed event: " + event.toString(2));
@@ -183,52 +187,102 @@ public class Hawk {
         return event.toString();
     }
 
-    private static JSONObject getStackTraceWithSource(Throwable throwable) {
-        JSONObject backtrace = new JSONObject();
-        StackTraceElement[] stackTrace = throwable.getStackTrace();
+    private static JSONArray getStackTraceWithSource(Throwable throwable) {
+        JSONArray backtrace = new JSONArray();
 
-        JSONArray frames = new JSONArray();
-        for (StackTraceElement element : stackTrace) {
+        for (StackTraceElement element : throwable.getStackTrace()) {
             JSONObject frame = new JSONObject();
-            frame.put("class", element.getClassName());
-            frame.put("method", element.getMethodName());
-            frame.put("file", element.getFileName());
+
+            frame.put("file", element.getFileName() != null ? element.getFileName() : "Unknown file");
             frame.put("line", element.getLineNumber());
+            frame.put("column", 0); // Column номер обычно недоступен в Java
+            frame.putOpt("function", element.getMethodName());
 
-            frame.put("source", getSourceCode(element));
+            String sourceCode = getSourceCode(element);
+            if (sourceCode.equals("Source code unavailable")) {
+                frame.put("sourceCode", (Object) null);
+            } else {
+                JSONArray sourceCodeArray = new JSONArray();
+                String[] lines = sourceCode.split("\n");
+                for (String line : lines) {
+                    String[] parts = line.split("\\|", 2);
+                    if (parts.length == 2) {
+                        try {
+                            int lineNum = Integer.parseInt(parts[0].trim());
+                            String content = parts[1];
+                            JSONObject lineObj = new JSONObject();
+                            lineObj.put("line", lineNum);
+                            lineObj.put("content", content);
+                            sourceCodeArray.put(lineObj);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+                frame.put("sourceCode", sourceCodeArray);
+            }
 
-            frames.put(frame);
+            backtrace.put(frame);
         }
 
-        backtrace.put("frames", frames);
         return backtrace;
     }
 
     private static String getSourceCode(StackTraceElement element) {
         try {
-            String filePath = element.getFileName();
-            int lineNumber = element.getLineNumber();
-
-            java.nio.file.Path path = java.nio.file.Paths.get("src", filePath);
-            if (!java.nio.file.Files.exists(path)) {
+            String fileName = element.getFileName();
+            if (fileName == null || fileName.isEmpty()) {
                 return "Source code unavailable";
             }
 
-            List<String> lines = java.nio.file.Files.readAllLines(path);
+            List<String> searchPaths = Arrays.asList(
+                    "src/main/java",
+                    "src"
+            );
 
-            int startLine = Math.max(0, lineNumber - 11);
-            int endLine = Math.min(lines.size(), lineNumber + 9);
+            for (String basePath : searchPaths) {
+                String fullFilePath = constructFullPath(basePath, element.getClassName(), fileName);
+                java.nio.file.Path fullPath = java.nio.file.Paths.get(fullFilePath);
 
-            StringBuilder sourceCode = new StringBuilder();
-            for (int i = startLine; i < endLine; i++) {
-                String line = lines.get(i).trim();
-                sourceCode.append(String.format("%4d | %s%n", i + 1, line));
+                if (java.nio.file.Files.exists(fullPath)) {
+                    System.out.println("File found: " + fullPath);
+                    return readFileContent(fullPath, element.getLineNumber());
+                } else {
+                    System.out.println("File not found: " + fullPath);
+                }
             }
 
-            return sourceCode.toString();
+            return "Source code unavailable";
         } catch (Exception e) {
+            System.err.println("Error while reading source code: " + e.getMessage());
             return "Source code unavailable";
         }
+    }
+
+    private static String constructFullPath(String basePath, String className, String fileName) {
+
+        String packagePath = className.replace('.', '/');
+        return basePath + "/" + packagePath + "." + getExtension(fileName);
+    }
+
+    private static String getExtension(String fileName) {
+        if (fileName != null && fileName.contains(".")) {
+            return fileName.substring(fileName.lastIndexOf('.') + 1);
+        }
+        return "";
+    }
+
+    private static String readFileContent(java.nio.file.Path path, int lineNumber) throws Exception {
+        List<String> lines = java.nio.file.Files.readAllLines(path);
+
+        int startLine = Math.max(0, lineNumber - 11);
+        int endLine = Math.min(lines.size(), lineNumber + 9);
+
+        StringBuilder sourceCode = new StringBuilder();
+        for (int i = startLine; i < endLine; i++) {
+            sourceCode.append(String.format("%4d | %s%n", i + 1, lines.get(i)));
+        }
+
+        return sourceCode.toString();
     }
 
     /**
