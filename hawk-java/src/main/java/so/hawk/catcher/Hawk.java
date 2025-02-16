@@ -1,4 +1,4 @@
-package so.hawk.java.catcher;
+package so.hawk.catcher;
 
 import java.util.Base64;
 import org.json.JSONObject;
@@ -38,40 +38,84 @@ public class Hawk {
     private static final String catcherType = "errors/java";
 
     /**
+     * Context data provided by the user.
+     */
+    private final JSONObject context;
+
+    /**
+     * Callback to execute before sending an event.
+     */
+    private final BeforeSendCallback beforeSend;
+
+    /**
+     * User information.
+     */
+    private final JSONObject user;
+
+    /**
+     * Private constructor to initialize the Hawk instance with settings.
+     *
+     * @param settings the configuration settings
+     */
+    private Hawk(HawkSettings settings) {
+        this.token = settings.getToken();
+        this.integrationId = extractIntegrationIdFromToken(this.token);
+        this.endpointBase = String.format("https://%s.k1.hawk.so", integrationId);
+        this.exceptionHandler = new CustomUncaughtExceptionHandler();
+        this.context = settings.getContext() != null ? settings.getContext() : new JSONObject();
+        this.beforeSend = settings.getBeforeSend();
+        this.user = settings.getUser();
+    }
+
+    /**
      * Sends an error or a custom message to the server based on the type of input.
      *
      * @param messageOrException Either a custom message or an exception to send.
      */
     public static void send(Object messageOrException) {
         Hawk hawkInstance = getInstance();
-
         String payload = composeEvent(hawkInstance, messageOrException);
+
+        // Apply beforeSend callback if present
+        if (hawkInstance.beforeSend != null) {
+            JSONObject jsonPayload = new JSONObject(payload);
+            JSONObject modifiedPayload = hawkInstance.beforeSend.onBeforeSend(jsonPayload);
+            if (modifiedPayload == null) {
+                System.out.println("Event was prevented from being sent.");
+                return;
+            }
+            payload = modifiedPayload.toString();
+        }
 
         HawkHttpUtils.sendPostRequest(hawkInstance.getEndpointBase(), payload);
     }
 
     /**
-     * Private constructor to initialize the Hawk instance.
+     * Initializes the Hawk instance with a configuration lambda.
      *
-     * @param token the authentication token
+     * @param configLambda the configuration lambda
      */
-    private Hawk(String token) {
-        this.token = token;
-        this.integrationId = extractIntegrationIdFromToken(token);
-        this.endpointBase = String.format("https://%s.k1.hawk.so", integrationId);
-        this.exceptionHandler = new CustomUncaughtExceptionHandler();
+    public static synchronized void init(HawkConfigurator configLambda) {
+        if (instance == null) {
+            // Создаем новый объект настроек
+            HawkSettings settings = new HawkSettings("default_token");
+
+            // Применяем конфигурацию через лямбду
+            configLambda.configure(settings);
+
+            // Инициализируем Hawk с готовыми настройками
+            instance = new Hawk(settings);
+            getInstance().exceptionHandler.enable();
+        }
     }
 
     /**
-     * Initializes the Hawk instance with the given token.
+     * Overloaded method to initialize the Hawk instance with only the token.
      *
      * @param token the authentication token
      */
     public static synchronized void init(String token) {
-        if (instance == null) {
-            instance = new Hawk(token);
-        }
-        getInstance().exceptionHandler.enable();
+        init(config -> config.setToken(token));
     }
 
     /**
@@ -82,11 +126,10 @@ public class Hawk {
      */
     private static Hawk getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Hawk is not initialized. Please call Hawk.init(token) before using.");
+            throw new IllegalStateException("Hawk is not initialized. Please call Hawk.init() before using.");
         }
         return instance;
     }
-
 
     /**
      * Decodes the integration ID from a Base64-encoded token.
@@ -115,7 +158,6 @@ public class Hawk {
         JSONObject event = new JSONObject();
         event.put("token", hawkInstance.getToken());
         event.put("catcherType", catcherType);
-
         JSONObject payloadDetails = new JSONObject();
 
         if (messageOrException instanceof Exception) {
@@ -128,10 +170,11 @@ public class Hawk {
             throw new IllegalArgumentException("Invalid argument type. Expected String or Exception.");
         }
 
+        payloadDetails.put("context", hawkInstance.context);
+        payloadDetails.put("user", hawkInstance.user); // Add user information
         event.put("payload", payloadDetails);
         return event.toString();
     }
-
 
     /**
      * Retrieves the token used by this Hawk instance.

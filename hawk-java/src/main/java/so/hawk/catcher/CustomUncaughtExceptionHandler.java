@@ -1,4 +1,4 @@
-package so.hawk.java.catcher;
+package so.hawk.catcher;
 
 /**
  * Custom handler for uncaught exceptions in threads.

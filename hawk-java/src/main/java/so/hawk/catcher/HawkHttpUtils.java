@@ -1,4 +1,4 @@
-package so.hawk.java.catcher;
+package so.hawk.catcher;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
