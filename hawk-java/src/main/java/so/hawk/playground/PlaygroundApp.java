@@ -26,7 +26,7 @@ public class PlaygroundApp {
                     });
         });
 
-        Hawk.send("I love Hawk so muchdfjkhdsfhds ");
+        Hawk.send("I love Hawk so much");
 
         runTestScenarios();
     }
