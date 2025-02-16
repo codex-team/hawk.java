@@ -1,12 +1,12 @@
-package so.hawk.java.playground;
+package so.hawk.playground;
 
-import so.hawk.java.catcher.Hawk;
+import so.hawk.catcher.Hawk;
 
 /**
  * PlaygroundApp demonstrates the use of HawkCatcher for handling uncaught exceptions.
  */
 public class PlaygroundApp {
-    public static String integrationtoken = "PASTE_YOUR_TOKEN";
+    public static String integrationtoken = "PASTE_YOUR_TOKEN" ;
 
     /**
      * The main method initializes the HawkCatcher, runs test scenarios and sends custom error.
@@ -15,13 +15,18 @@ public class PlaygroundApp {
      */
     public static void main(String[] args) {
 
-        Hawk.init(PlaygroundApp.integrationtoken);
+        Hawk.init(config -> {
+            config.setToken(integrationtoken)
+                    .setContext("application", "PlaygroundApp")
+                    .setContext("version", "1.0.0")
+                    .setUser("id", "12345")
+                    .setBeforeSend(payload -> {
+                        payload.put("customField", "Custom Value");
+                        return payload;
+                    });
+        });
 
-        Hawk.setContext("application", "PlaygroundApp");
-        Hawk.setContext("version", "1.0.0");
-        Hawk.setContext("environment", "development");
-
-        Hawk.send("I love Hawk so muchdfjkhdsfhds ");
+        Hawk.send("I love Hawk so much");
 
         runTestScenarios();
     }

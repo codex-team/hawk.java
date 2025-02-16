@@ -1,4 +1,4 @@
-package so.hawk.java.catcher;
+package so.hawk.catcher;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -38,6 +38,7 @@ public class HawkHttpUtils {
         URL url = new URL(endpointBase);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(2000);
+        connection.setReadTimeout(2000);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -48,12 +49,14 @@ public class HawkHttpUtils {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+          System.out.println("Data sent successfully!");
+        } else {
           System.err.println("Failed to log error. HTTP response code: " + responseCode);
         }
-
       } catch (Exception ex) {
         System.err.println("Failed to send error: " + ex.getMessage());
+        ex.printStackTrace();
       }
     }
 }
