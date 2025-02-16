@@ -26,11 +26,7 @@ public class PlaygroundApp {
                     });
         });
 
-        Hawk.setContext("application", "PlaygroundApp");
-        Hawk.setContext("version", "1.0.0");
-        Hawk.setContext("environment", "development");
-
-        Hawk.send("I love Hawk so muchdfjkhdsfhds ");
+        Hawk.send("I love Hawk so much");
 
         runTestScenarios();
     }
