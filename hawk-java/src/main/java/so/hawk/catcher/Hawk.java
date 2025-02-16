@@ -1,6 +1,9 @@
 package so.hawk.catcher;
 
 import java.util.Base64;
+import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -76,7 +79,6 @@ public class Hawk {
         Hawk hawkInstance = getInstance();
         String payload = composeEvent(hawkInstance, messageOrException);
 
-        // Apply beforeSend callback if present
         if (hawkInstance.beforeSend != null) {
             JSONObject jsonPayload = new JSONObject(payload);
             JSONObject modifiedPayload = hawkInstance.beforeSend.onBeforeSend(jsonPayload);
@@ -163,6 +165,8 @@ public class Hawk {
         if (messageOrException instanceof Exception) {
             Exception e = (Exception) messageOrException;
             payloadDetails.put("title", e.toString());
+
+            payloadDetails.put("backtrace", getStackTraceWithSource(e));
         } else if (messageOrException instanceof String) {
             String message = (String) messageOrException;
             payloadDetails.put("title", message);
@@ -171,9 +175,60 @@ public class Hawk {
         }
 
         payloadDetails.put("context", hawkInstance.context);
-        payloadDetails.put("user", hawkInstance.user); // Add user information
+        payloadDetails.put("user", hawkInstance.user);
         event.put("payload", payloadDetails);
+
+        System.out.println("Composed event: " + event.toString(2));
+
         return event.toString();
+    }
+
+    private static JSONObject getStackTraceWithSource(Throwable throwable) {
+        JSONObject backtrace = new JSONObject();
+        StackTraceElement[] stackTrace = throwable.getStackTrace();
+
+        JSONArray frames = new JSONArray();
+        for (StackTraceElement element : stackTrace) {
+            JSONObject frame = new JSONObject();
+            frame.put("class", element.getClassName());
+            frame.put("method", element.getMethodName());
+            frame.put("file", element.getFileName());
+            frame.put("line", element.getLineNumber());
+
+            frame.put("source", getSourceCode(element));
+
+            frames.put(frame);
+        }
+
+        backtrace.put("frames", frames);
+        return backtrace;
+    }
+
+    private static String getSourceCode(StackTraceElement element) {
+        try {
+            String filePath = element.getFileName();
+            int lineNumber = element.getLineNumber();
+
+            java.nio.file.Path path = java.nio.file.Paths.get("src", filePath);
+            if (!java.nio.file.Files.exists(path)) {
+                return "Source code unavailable";
+            }
+
+            List<String> lines = java.nio.file.Files.readAllLines(path);
+
+            int startLine = Math.max(0, lineNumber - 11);
+            int endLine = Math.min(lines.size(), lineNumber + 9);
+
+            StringBuilder sourceCode = new StringBuilder();
+            for (int i = startLine; i < endLine; i++) {
+                String line = lines.get(i).trim();
+                sourceCode.append(String.format("%4d | %s%n", i + 1, line));
+            }
+
+            return sourceCode.toString();
+        } catch (Exception e) {
+            return "Source code unavailable";
+        }
     }
 
     /**
