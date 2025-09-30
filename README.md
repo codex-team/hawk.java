@@ -9,3 +9,7 @@ Now you can download(or clone repo) catcher and playground packeges to test it.
 
 In PlaygroundApp.Java you will see "import org.catcher.Hawk" that connect catcher.
 
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+See the [LICENSE](./LICENSE) file for the full text.
